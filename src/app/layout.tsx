@@ -21,13 +21,16 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Linear Regression From Scratch",
+  title: "Implementations",
   description:
-    "High-quality implementations of research papers in AI/ML with clear explanations and reproducible results.",
+    "High-quality implementations of research papers with clear explanations and reproducible results.",
   openGraph: {
-    title: "Linear Regression From Scratch",
+    title: "Implementations",
     description:
-      "High-quality implementations of research papers in AI/ML with clear explanations and reproducible results.",
+      "High-quality implementations of research papers with clear explanations and reproducible results.",
+  },
+  icons: {
+    icon: "/favicon.svg",
   },
 };
 
