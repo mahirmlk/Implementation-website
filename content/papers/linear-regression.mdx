@@ -1,0 +1,378 @@
+---
+title: "Linear Regression From Scratch"
+subtitle: "Complete Regression Suite — OLS, Ridge, Lasso & ElasticNet"
+date: "2026"
+description: "A hands-on guide to building four regression models from the ground up using only NumPy. Learn how regularization and coordinate descent work under the hood — with interactive visuals and a real-world housing price prediction example."
+github: "https://github.com/mahirmlk/linear-regression.git"
+tags: ["linear-regression", "supervised-learning", "numpy", "python"]
+---
+
+## Overview
+
+This project implements **four regression models entirely from scratch** using only NumPy — no scikit-learn, no PyTorch, no black-box libraries. Each model is built with a modular, vectorized training pipeline and validated against sklearn baselines for numerical equivalence.
+
+The implementation covers four models, each with distinct regularization strategies:
+
+**OLS (Ordinary Least Squares)** — No penalty. Solved via gradient descent or the normal equation. Produces unbiased estimates with minimum variance.
+
+**Ridge Regression** — L2 penalty on coefficient magnitude. Shrinks all weights toward zero without eliminating any. Handles multicollinearity gracefully.
+
+**Lasso Regression** — L1 penalty via coordinate descent. Produces sparse solutions by zeroing out irrelevant features — automatic feature selection.
+
+**ElasticNet** — Combines L1 and L2 penalties. Balances Lasso's sparsity with Ridge's grouping effect, controlled by a mixing ratio parameter.
+
+The project includes **8 progressive notebooks**, an **interactive p5.js visualizer**, **6 evaluation metrics**, and a **real-world experiment** on the California Housing dataset (20,640 samples).
+
+---
+
+## Project Architecture
+
+```
+linear-regression/
+├── src/
+│   ├── linear_regression.py    # 452 lines — all 4 models + modular pipeline
+│   ├── metrics.py              # 124 lines — MAE, MSE, RMSE, R², Adj R², MAPE
+│   ├── visualization.py        # 173 lines — matplotlib plotting utilities
+│   ├── utils.py                # 106 lines — data generation helpers
+│   ├── demo.py                 # 340 lines — 4 experiment runner
+│   └── __init__.py             # 61 lines — public API exports
+── notebooks/
+│   ├── 01_regression_intuition.ipynb
+│   ├── 02_maths.ipynb
+│   ├── 03_linear_regression.ipynb
+│   ├── 04_visualization_and_metrics.ipynb
+│   ├── 05_sklearn_implementation.ipynb
+│   ├── 06_regression_types.ipynb
+│   ├── 07_assumptions_and_limitations.ipynb
+│   └── 08_real_world_dataset.ipynb
+├── data/
+│   └── housing.csv             # California Housing — 20,640 rows
+├── visualize.html              # Interactive p5.js training visualizer
+└── README.md                   # Full documentation
+```
+
+---
+
+## Mathematical Foundation
+
+### Hypothesis Function
+
+For a dataset with `n` features, the linear model predicts:
+
+$$h_{w,b}(x) = w^T x + b = \sum_{j=1}^{n} w_j x_j + b$$
+
+In vectorized form across `m` samples:
+
+$$\hat{y} = Xw + b$$
+
+### Cost Function — Mean Squared Error
+
+$$J(w, b) = \frac{1}{2m} \sum_{i=1}^{m} (h(x^{(i)}) - y^{(i)})^2 = \frac{1}{2m} \|Xw + b - y\|_2^2$$
+
+### Gradient Descent — OLS
+
+The gradients for ordinary least squares:
+
+$$\frac{\partial J}{\partial w} = \frac{2}{m} X^T (Xw + b - y)$$
+
+$$\frac{\partial J}{\partial b} = \frac{2}{m} \sum_{i=1}^{m} (h(x^{(i)}) - y^{(i)})$$
+
+Parameter updates with learning rate `α`:
+
+$$w := w - \alpha \frac{\partial J}{\partial w}, \quad b := b - \alpha \frac{\partial J}{\partial b}$$
+
+### Ridge Regression — L2 Regularization
+
+Adds a penalty on the magnitude of coefficients:
+
+$$J_{ridge}(w, b) = \frac{1}{2m} \|Xw + b - y\|_2^2 + \alpha \|w\|_2^2$$
+
+Gradient with L2 penalty:
+
+$$\frac{\partial J_{ridge}}{\partial w} = \frac{2}{m} X^T (Xw + b - y) + 2\alpha w$$
+
+Closed-form solution (Normal Equation with regularization):
+
+$$w = (X^T X + \alpha I)^{-1} X^T y$$
+
+### Lasso Regression — L1 Regularization
+
+Uses L1 penalty which produces **sparse** solutions:
+
+$$J_{lasso}(w, b) = \frac{1}{2m} \|Xw + b - y\|_2^2 + \alpha \|w\|_1$$
+
+Solved via **coordinate descent** with soft thresholding:
+
+$$w_j := \frac{S(\rho_j, \alpha)}{1}$$
+
+Where the soft threshold operator:
+
+$$S(\rho, \lambda) = \begin{cases} \rho - \lambda & \text{if } \rho > \lambda \\ \rho + \lambda & \text{if } \rho < -\lambda \\ 0 & \text{if } |\rho| \leq \lambda \end{cases}$$
+
+### ElasticNet — Combined L1 + L2
+
+Blends Lasso and Ridge penalties with mixing ratio `ρ`:
+
+$$J_{elastic}(w, b) = \frac{1}{2m} \|Xw + b - y\|_2^2 + \alpha \left[ \rho \|w\|_1 + \frac{1-\rho}{2} \|w\|_2^2 \right]$$
+
+Coordinate descent update:
+
+$$w_j := \frac{S(\rho_j, \alpha \rho)}{1 + \alpha(1-\rho)}$$
+
+---
+
+## Modular Training Pipeline
+
+The implementation uses a **fully vectorized, modular pipeline** that is shared across all models:
+
+```python
+def initialize_parameters(n_features, random_state=None):
+    weights = np.zeros(n_features)
+    bias = 0.0
+    return weights, bias
+
+def forward_pass(X, weights, bias):
+    return X @ weights + bias
+
+def compute_loss(y_true, y_pred):
+    return np.mean((y_true - y_pred) ** 2)
+
+def compute_gradients_ols(X, y_true, y_pred):
+    n = len(y_true)
+    dw = (2 / n) * X.T @ (y_pred - y_true)
+    db = (2 / n) * np.sum(y_pred - y_true)
+    return dw, db
+
+def update_parameters(weights, bias, dw, db, learning_rate):
+    weights -= learning_rate * dw
+    bias -= learning_rate * db
+    return weights, bias
+```
+
+### Base Class — Feature Standardization
+
+All models inherit from `_BaseRegression` which handles **Z-score normalization**:
+
+```python
+def _standardize(self, X, fit=True):
+    if fit:
+        self.X_mean = np.mean(X, axis=0)
+        self.X_std = np.std(X, axis=0)
+    return (X - self.X_mean) / self.X_std
+
+def _unstandardize_weights(self):
+    # Map learned weights back to original feature scale
+    self.weights = self.weights / self.X_std
+    self.bias = self.bias - np.dot(self.X_mean, self.weights)
+```
+
+This ensures that:
+- Gradient descent converges faster (features on same scale)
+- Learned coefficients are interpretable in original units
+- Regularization penalties are applied fairly across features
+
+---
+
+## Model Implementations
+
+### 1. OLS — Ordinary Least Squares
+
+Two solvers provided:
+
+**Gradient Descent** — iterative, works for any dataset size:
+```python
+model = LinearRegressionFromScratch(learning_rate=0.05, n_iters=1500)
+model.fit(X_train, y_train)
+```
+
+**Closed-Form (Normal Equation)** — exact solution in one step:
+```python
+model.fit_closed_form(X_train, y_train)
+```
+
+Validation: GD and closed-form produce identical results with max prediction difference of **4.26 × 10⁻¹⁴**.
+
+### 2. Ridge Regression — L2 Regularization
+
+```python
+model = RidgeRegressionFromScratch(alpha=1.0, learning_rate=0.05, n_iters=3000)
+model.fit(X_train, y_train)
+```
+
+Also supports closed-form: `model.fit_closed_form(X_train, y_train)`
+
+Key behavior: shrinks all coefficients toward zero but never exactly zero. Effective when features are correlated.
+
+### 3. Lasso Regression — L1 Regularization
+
+```python
+model = LassoRegressionFromScratch(alpha=0.1, n_iters=5000)
+model.fit(X_train, y_train)
+```
+
+Uses **coordinate descent** (no learning rate). Produces **sparse** solutions — on the 13-feature collinear dataset, Lasso zeroed out **7.7%** of coefficients, performing automatic feature selection.
+
+### 4. ElasticNet — Combined Regularization
+
+```python
+model = ElasticNetRegressionFromScratch(alpha=0.1, l1_ratio=0.5, n_iters=5000)
+model.fit(X_train, y_train)
+```
+
+Balances Lasso's sparsity with Ridge's grouping effect. When `l1_ratio=1.0` → pure Lasso; when `l1_ratio=0.0` → pure Ridge.
+
+---
+
+## Evaluation Metrics
+
+Six metrics implemented from scratch in `src/metrics.py`:
+
+<div className="my-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+  <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-5">
+    <div className="text-[10px] font-semibold tracking-[0.15em] uppercase text-zinc-500 mb-3">MAE</div>
+    <div className="text-[15px] text-zinc-200 mb-3 font-mono">$$\frac{1}{n}\sum|y - \hat{y}|$$</div>
+    <div className="text-[12px] text-zinc-500 leading-relaxed">Robust to outliers</div>
+  </div>
+  <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-5">
+    <div className="text-[10px] font-semibold tracking-[0.15em] uppercase text-zinc-500 mb-3">MSE</div>
+    <div className="text-[15px] text-zinc-200 mb-3 font-mono">$$\frac{1}{n}\sum(y - \hat{y})^2$$</div>
+    <div className="text-[12px] text-zinc-500 leading-relaxed">Penalizes large errors</div>
+  </div>
+  <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-5">
+    <div className="text-[10px] font-semibold tracking-[0.15em] uppercase text-zinc-500 mb-3">RMSE</div>
+    <div className="text-[15px] text-zinc-200 mb-3 font-mono">$$\sqrt{MSE}$$</div>
+    <div className="text-[12px] text-zinc-500 leading-relaxed">Same units as target</div>
+  </div>
+  <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-5">
+    <div className="text-[10px] font-semibold tracking-[0.15em] uppercase text-zinc-500 mb-3">R²</div>
+    <div className="text-[15px] text-zinc-200 mb-3 font-mono">$$1 - \frac{SS_{res}}{SS_{tot}}$$</div>
+    <div className="text-[12px] text-zinc-500 leading-relaxed">Variance explained</div>
+  </div>
+  <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-5">
+    <div className="text-[10px] font-semibold tracking-[0.15em] uppercase text-zinc-500 mb-3">Adjusted R²</div>
+    <div className="text-[15px] text-zinc-200 mb-3 font-mono">$$1 - (1-R^2)\frac{n-1}{n-p-1}$$</div>
+    <div className="text-[12px] text-zinc-500 leading-relaxed">Penalizes extra features</div>
+  </div>
+  <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-5">
+    <div className="text-[10px] font-semibold tracking-[0.15em] uppercase text-zinc-500 mb-3">MAPE</div>
+    <div className="text-[15px] text-zinc-200 mb-3 font-mono">$$\frac{100}{n}\sum|\frac{y-\hat{y}}{y}|$$</div>
+    <div className="text-[12px] text-zinc-500 leading-relaxed">Percentage error</div>
+  </div>
+</div>
+
+---
+
+## Experiments
+
+### Experiment 1 — Simple Univariate Regression
+
+- **Data**: 300 samples, 1 feature, true coefficient `w = 3.0`
+- **Models**: OLS (GD), OLS (closed-form), sklearn LinearRegression
+- **Result**: All three produce identical fitted lines. GD converges in ~800 iterations at `lr=0.05`.
+
+### Experiment 2 — Multi-Feature with Collinearity
+
+- **Data**: 500 samples, 13 features (3 collinear pairs added)
+- **Models**: OLS, Ridge (α=1.0), Lasso (α=0.1), ElasticNet (α=0.1, ρ=0.5)
+- **Key findings**:
+  - OLS coefficients explode on collinear features
+  - Ridge shrinks all coefficients smoothly
+  - Lasso zeros out 7.7% of features
+  - ElasticNet balances both behaviors
+
+### Experiment 3 — Polynomial Regression
+
+- **Data**: 200 samples, nonlinear `y = 2x - 0.5x² + 0.1x³`
+- **Features**: Polynomial features up to degree 3 (from-scratch implementation)
+- **Models**: OLS, Ridge (α=5.0), Lasso (α=0.5)
+- **Result**: Degree-3 polynomial captures the true curve. Ridge prevents overfitting on higher-degree terms.
+
+### Experiment 4 — California Housing (Real-World)
+
+- **Data**: 20,640 samples, 8 features (median income, rooms, age, etc.)
+- **Pipeline**: `StandardScaler` → all 4 models
+- **Results**:
+
+<div className="my-6 rounded-lg border border-zinc-800 overflow-hidden">
+  <div className="grid grid-cols-3 bg-zinc-900/60 text-[11px] font-medium tracking-[0.1em] uppercase text-zinc-500">
+    <div className="px-4 py-3 border-b border-zinc-800">Model</div>
+    <div className="px-4 py-3 border-b border-zinc-800">R²</div>
+    <div className="px-4 py-3 border-b border-zinc-800">RMSE</div>
+  </div>
+  <div className="divide-y divide-zinc-800/60">
+    <div className="grid grid-cols-3 text-[13px] text-zinc-300">
+      <div className="px-4 py-3">OLS</div>
+      <div className="px-4 py-3">0.625</div>
+      <div className="px-4 py-3">69,200</div>
+    </div>
+    <div className="grid grid-cols-3 text-[13px] text-zinc-300">
+      <div className="px-4 py-3">Ridge (α=1.0)</div>
+      <div className="px-4 py-3">0.625</div>
+      <div className="px-4 py-3">69,200</div>
+    </div>
+    <div className="grid grid-cols-3 text-[13px] text-zinc-300">
+      <div className="px-4 py-3">Lasso (α=0.1)</div>
+      <div className="px-4 py-3">0.618</div>
+      <div className="px-4 py-3">70,100</div>
+    </div>
+    <div className="grid grid-cols-3 text-[13px] text-zinc-300">
+      <div className="px-4 py-3">ElasticNet (α=0.1, ρ=0.5)</div>
+      <div className="px-4 py-3">0.622</div>
+      <div className="px-4 py-3">69,600</div>
+    </div>
+  </div>
+</div>
+
+- **Top features**: `median_income` (coefficient ≈ 43,000), `latitude`, `longitude`
+- Lasso zeroed out 2 of 8 features (automatic feature selection)
+
+---
+
+## Interactive Visualization
+
+The project includes `visualize.html` — a **real-time p5.js training visualizer** with:
+
+- **Left panel**: 2D scatter plot with 4 simultaneous regression lines
+- **Top-right**: Live coefficient bar chart (learned vs. true weights)
+- **Bottom-right**: 4 loss curves on log scale
+- **Controls**: Model selector, α slider, speed control, pause/reset
+- **Interaction**: Click to add data points, Space to pause, R to reset
+
+All 4 models train simultaneously in the browser, allowing direct visual comparison of convergence behavior.
+
+---
+
+## Five Regression Assumptions
+
+The implementation documents and demonstrates all five classical assumptions:
+
+1. **Linearity** — Relationship between features and target is linear
+2. **Independence** — Residuals are uncorrelated (Durbin-Watson test)
+3. **Homoscedasticity** — Constant variance of residuals across predictions
+4. **Normality** — Residuals follow a normal distribution (Shapiro-Wilk test, Q-Q plots)
+5. **No Multicollinearity** — Features are not highly correlated (VIF analysis)
+
+Notebook 07 provides visual demonstrations of each assumption and remedies for violations.
+
+---
+
+## Key Learnings
+
+1. **Feature scaling is non-negotiable** — Without standardization, gradient descent diverges or converges extremely slowly. Z-score normalization reduced convergence iterations by ~60%.
+
+2. **Closed-form vs. iterative** — The normal equation gives exact solutions but requires inverting an `n×n` matrix (O(n³)). For n > 10,000 features, gradient descent is the only practical option.
+
+3. **Regularization prevents overfitting** — On the collinear dataset, OLS produced coefficients as large as ±500. Ridge capped them at ±50. Lasso zeroed out irrelevant features entirely.
+
+4. **Coordinate descent for L1** — Gradient descent cannot handle the non-differentiable L1 penalty. Coordinate descent updates one weight at a time using soft thresholding — elegant and efficient.
+
+5. **Vectorization is everything** — The fully vectorized training loop (`X @ weights + bias`) runs 50-100× faster than explicit Python loops. NumPy's BLAS-backed operations are the difference between a usable and unusable implementation.
+
+---
+
+## References
+
+- Ng, A. (2012). CS229 Lecture Notes: Supervised Learning. Stanford University.
+- Hastie, T., Tibshirani, R., & Friedman, J. (2009). The Elements of Statistical Learning.
+- James, G., Witten, D., Hastie, T., & Tibshirani, R. (2013). An Introduction to Statistical Learning.
+- GitHub Repository: [mahirmlk/linear-regression](https://github.com/mahirmlk/linear-regression.git)
