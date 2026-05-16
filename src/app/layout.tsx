@@ -21,28 +21,33 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Implementations",
+  metadataBase: new URL("https://papers.mahirmalik.in"),
+  title: "AI/ML Implementations • Research Reproductions",
   description:
-    "High-quality implementations of research papers with clear explanations and reproducible results.",
+    "Research paper implementations, architecture designs, optimization experiments, and scalable AI systems built with clean engineering and reproducible workflows.",
   openGraph: {
-    title: "Implementations",
+    type: "website",
+    locale: "en_US",
+    url: "https://papers.mahirmalik.in",
+    siteName: "Implementations",
+    title: "AI/ML Implementations • Research Reproductions",
     description:
-      "High-quality implementations of research papers with clear explanations and reproducible results.",
+      "Research paper implementations, architecture designs, optimization experiments, and scalable AI systems built with clean engineering and reproducible workflows.",
     images: [
       {
-        url: "/og-image.png",
+        url: "/og-banner.png",
         width: 1200,
         height: 630,
-        alt: "Implementations Preview",
+        alt: "AI/ML Implementations",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Implementations",
+    title: "AI/ML Implementations • Research Reproductions",
     description:
-      "High-quality implementations of research papers with clear explanations and reproducible results.",
-    images: ["/og-image.png"],
+      "Research paper implementations, architecture designs, optimization experiments, and scalable AI systems built with clean engineering and reproducible workflows.",
+    images: ["/og-banner.png"],
   },
   icons: {
     icon: "/favicon.svg",
