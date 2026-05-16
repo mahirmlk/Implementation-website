@@ -28,6 +28,21 @@ export const metadata: Metadata = {
     title: "Implementations",
     description:
       "High-quality implementations of research papers with clear explanations and reproducible results.",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Implementations Preview",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Implementations",
+    description:
+      "High-quality implementations of research papers with clear explanations and reproducible results.",
+    images: ["/og-image.png"],
   },
   icons: {
     icon: "/favicon.svg",
