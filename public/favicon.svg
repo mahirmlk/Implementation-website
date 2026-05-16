@@ -1,4 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
-  <rect width="32" height="32" rx="6" fill="#0a0a0a"/>
-  <path d="M8 16h16M16 8v16" stroke="#fafafa" stroke-width="2" stroke-linecap="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <!-- Outer rounded rectangle -->
+  <rect x="15" y="15" width="70" height="70" rx="12" stroke="white" stroke-width="3"/>
+  
+  <!-- Code brackets </> -->
+  <path d="M35 35 L25 50 L35 65" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M65 35 L75 50 L65 65" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M55 30 L45 70" stroke="white" stroke-width="3" stroke-linecap="round"/>
+  
+  <!-- Corner dots -->
+  <circle cx="15" cy="15" r="4" fill="white"/>
+  <circle cx="85" cy="85" r="4" fill="white"/>
 </svg>
