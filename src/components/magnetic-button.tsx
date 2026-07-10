@@ -12,7 +12,7 @@ interface MagneticButtonProps {
 
 export default function MagneticButton({
   children,
-  href = "/papers/linear-regression",
+  href = "/implementations",
 }: MagneticButtonProps) {
   const ref = useRef<HTMLDivElement>(null);
 

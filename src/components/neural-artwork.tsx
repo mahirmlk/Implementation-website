@@ -2,6 +2,8 @@
 
 import { motion } from "framer-motion";
 
+const roundGeometry = (value: number) => Math.round(value * 1000) / 1000;
+
 function Strand({
   d,
   delay = 0,
@@ -112,11 +114,11 @@ export default function NeuralArtwork() {
   const vlines: { x: number; y1: number; y2: number; delay: number }[] = [];
   for (let i = 0; i < 10; i++) {
     const x = 140 + i * 36;
-    const yBase = 400 + (Math.random() - 0.5) * 40;
+    const yBase = roundGeometry(400 + Math.sin((i + 1) * 2.17) * 20);
     vlines.push({
       x,
-      y1: yBase - 30 - Math.random() * 60,
-      y2: yBase + 15 + Math.random() * 20,
+      y1: roundGeometry(yBase - 30 - ((Math.sin((i + 1) * 4.91) + 1) / 2) * 60),
+      y2: roundGeometry(yBase + 15 + ((Math.sin((i + 1) * 6.31) + 1) / 2) * 20),
       delay: 1.2 + i * 0.08,
     });
   }
@@ -134,7 +136,12 @@ export default function NeuralArtwork() {
   ];
 
   particlePositions.forEach(([cx, cy], i) => {
-    particles.push({ cx, cy, r: 0.5 + Math.random() * 0.4, delay: 0.8 + i * 0.04 });
+    particles.push({
+      cx,
+      cy,
+      r: roundGeometry(0.5 + ((Math.sin((i + 1) * 3.71) + 1) / 2) * 0.4),
+      delay: 0.8 + i * 0.04,
+    });
   });
 
   return (

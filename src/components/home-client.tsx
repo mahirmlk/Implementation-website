@@ -72,58 +72,6 @@ function MailIcon({ className }: { className?: string }) {
   );
 }
 
-function GridThumbnail() {
-  return (
-    <svg className="h-full w-full" viewBox="0 0 60 48" fill="none">
-      <circle cx="20" cy="16" r="1" fill="white" opacity="0.45" />
-      <circle cx="30" cy="16" r="1" fill="white" opacity="0.45" />
-      <circle cx="40" cy="16" r="1" fill="white" opacity="0.45" />
-      <circle cx="20" cy="24" r="1" fill="white" opacity="0.45" />
-      <circle cx="30" cy="24" r="1" fill="white" opacity="0.45" />
-      <circle cx="40" cy="24" r="1" fill="white" opacity="0.45" />
-      <circle cx="20" cy="32" r="1" fill="white" opacity="0.45" />
-      <circle cx="30" cy="32" r="1" fill="white" opacity="0.45" />
-      <circle cx="40" cy="32" r="1" fill="white" opacity="0.45" />
-    </svg>
-  );
-}
-
-function BarsThumbnail() {
-  return (
-    <svg className="h-full w-full" viewBox="0 0 60 48" fill="none">
-      <rect x="20" y="28" width="4" height="10" fill="white" opacity="0.35" />
-      <rect x="28" y="20" width="4" height="18" fill="white" opacity="0.45" />
-      <rect x="36" y="14" width="4" height="24" fill="white" opacity="0.55" />
-    </svg>
-  );
-}
-
-function RingsThumbnail() {
-  return (
-    <svg className="h-full w-full" viewBox="0 0 60 48" fill="none">
-      <circle cx="30" cy="24" r="10" stroke="white" strokeWidth="0.5" opacity="0.25" />
-      <circle cx="30" cy="24" r="6" stroke="white" strokeWidth="0.5" opacity="0.35" />
-      <circle cx="30" cy="24" r="2" fill="white" opacity="0.45" />
-    </svg>
-  );
-}
-
-function AngleThumbnail() {
-  return (
-    <svg className="h-full w-full" viewBox="0 0 60 48" fill="none">
-      <path d="M14 36 L30 14 L46 36" stroke="white" strokeWidth="0.7" opacity="0.25" />
-      <circle cx="30" cy="14" r="1.5" fill="white" opacity="0.45" />
-    </svg>
-  );
-}
-
-const thumbnails = [GridThumbnail, BarsThumbnail, RingsThumbnail, AngleThumbnail];
-
-function getThumbnail(index: number) {
-  const Component = thumbnails[index % thumbnails.length];
-  return <Component />;
-}
-
 interface HomeClientProps {
   papers: PaperMeta[];
 }
@@ -240,14 +188,12 @@ export default function HomeClient({ papers }: HomeClientProps) {
 
           <div className="mt-5 flex flex-col">
             {featuredPapers.length > 0 ? (
-              featuredPapers.map((paper, i) => (
+              featuredPapers.map((paper) => (
                 <FeaturedItem
                   key={paper.slug}
                   title={paper.frontmatter.title}
                   date={paper.frontmatter.date}
-                  index={i}
                   href={`/papers/${paper.slug}`}
-                  thumbnail={getThumbnail(i)}
                 />
               ))
             ) : (
