@@ -1,0 +1,76 @@
+---
+title: "Gaussian Mixture Models"
+subtitle: "Soft clusters, fitted with expectation-maximization"
+date: "2026"
+description: "Soft clustering via EM. Points can belong to multiple groups, which makes more sense than hard boundaries for a lot of real data."
+github: "https://github.com/mahirmlk/papers-implementations/tree/main/gaussian_mixture_model"
+tags: ["gaussian-mixture-model", "statistical-modeling", "expectation-maximization", "numpy"]
+---
+
+I used this implementation to slow down the parts of GMMs that are easy to hand-wave: soft assignment, covariance choice, numerical stability, and the way initialization changes the final fit.
+
+A mixture model is useful when clusters overlap. A point can belong partly to one component and partly to another. The model keeps that uncertainty instead of forcing a hard decision too early.
+
+That is the main difference from k-means. K-means asks for a nearest center. A Gaussian mixture asks which probability distribution could have produced the point. The answer can be shared across components, and that makes the model a better fit for data where the groups blend into each other.
+
+## The model
+
+Each point is explained by a weighted sum of Gaussian components:
+
+$$p(x_i) = \sum_{k=1}^{K} \pi_k\, \mathcal{N}(x_i \mid \mu_k, \Sigma_k)$$
+
+The weights say how common a component is. The means say where it sits. The covariance decides the shape of that component.
+
+The implementation supports full, tied, diagonal, and spherical covariance. Keeping those options separate makes the trade-off visible: more shape, more parameters, more ways to become fragile.
+
+A spherical covariance treats each component like a round cloud. A diagonal covariance lets each feature have its own spread, but does not model correlation between features. A full covariance can tilt and stretch the cloud in any direction. That freedom is useful, but it also means the model has more parameters to estimate from the same data.
+
+The mixture weights, $\pi_k$, are not just bookkeeping. If one component explains very few samples, its weight shrinks. If a component explains many samples, it becomes a larger part of the density. This is why soft assignments and weights have to be updated together.
+
+## The fitting loop
+
+Expectation-maximization alternates between two simple moves.
+
+First, estimate how much each component explains each point:
+
+$$r_{ik} = \frac{\pi_k \mathcal{N}(x_i \mid \mu_k, \Sigma_k)}{\sum_{j=1}^{K}\pi_j \mathcal{N}(x_i \mid \mu_j, \Sigma_j)}$$
+
+Then update the component weights, means, and covariances using those responsibilities as fractional membership.
+
+The E-step answers: given the current parameters, how much should each component be responsible for each point? The M-step answers: if those responsibilities were true, what parameters would fit them best? Neither step solves the whole problem alone. Together, they move the likelihood upward until there is no meaningful improvement left.
+
+```python
+log_prob_norm = logsumexp(weighted_log_prob, axis=1)
+log_resp = weighted_log_prob - log_prob_norm[:, None]
+responsibilities = np.exp(log_resp)
+```
+
+The important part is that the probabilities are normalized in log space. Without that, tiny densities can underflow and the model starts failing for reasons that have nothing to do with clustering.
+
+This is also why Cholesky-based density computation is useful. Inverting covariance matrices directly is both slower and less stable. Solving through a factorization keeps the math closer to what the computer can do reliably.
+
+## Why initialization matters
+
+EM is not guaranteed to find the best possible mixture. It finds a good mixture near where it started. If two components begin too close together, they may split the same group. If a component begins in an empty region, it may never recover.
+
+The implementation uses a k-means++ style start and multiple restarts for that reason. It does not make the problem disappear, but it reduces the chance that one unlucky start defines the final model.
+
+Regularization plays a similar role for covariance. A component that owns only a few points can try to collapse onto them, which makes the likelihood look better while producing a brittle model. Adding a small value to the covariance diagonal keeps the component from becoming singular.
+
+## What I checked
+
+I measured held-out log-likelihood across fixed seeds and compared the results with sklearn. I also included an ill-conditioned covariance case, because covariance regularization is not a cosmetic parameter. It is what keeps the fit usable when the data is narrow, duplicated, or badly scaled.
+
+The lower bound is recorded from a consistent parameter state after each pass, so convergence can be read directly instead of inferred from the final labels.
+
+I treated labels as secondary. For a mixture model, the cleaner signal is likelihood: how well does the fitted density explain data it did not train on? Cluster labels can be useful for inspection, but they are only a byproduct of a probability model.
+
+## Where it stops
+
+This implementation does not include Bayesian priors, sample weights, warm starts, component pruning, or large-data memory work. Full covariance also gets expensive quickly in high dimensions.
+
+The useful lesson is more basic: EM is clean, but it is local. Restarts, initialization, and covariance structure are part of the model, not setup details.
+
+## Source
+
+Code and reproducibility commands live in [mahirmlk/papers-implementations](https://github.com/mahirmlk/papers-implementations/tree/main/gaussian_mixture_model).

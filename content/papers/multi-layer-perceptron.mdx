@@ -1,0 +1,75 @@
+---
+title: "Multi-Layer Perceptron"
+subtitle: "Back-propagation written out in NumPy"
+date: "2026"
+description: "A basic neural network without any framework magic. Forward pass, backprop, weight updates — all written out in NumPy."
+github: "https://github.com/mahirmlk/papers-implementations/tree/main/multi-layer_perceptron"
+tags: ["multi-layer-perceptron", "deep-learning", "backpropagation", "numpy"]
+---
+
+This implementation is a small neural network without a framework doing the hard parts off-screen. It supports configurable hidden layers, common activations, softmax classification, regression, mini-batch SGD, momentum, L2 regularization, gradient clipping, and early stopping.
+
+The goal was not to make a fast deep learning library. The goal was to make back-propagation ordinary enough to inspect.
+
+A multilayer perceptron is just repeated linear maps with nonlinearities between them. The linear parts move and mix features. The nonlinear parts stop the whole network from collapsing into one large linear model. Without those activations, adding more layers would not buy much.
+
+## The forward pass
+
+Each layer does the same two things: multiply by weights, add a bias, then pass through an activation.
+
+$$z^{(\ell)} = a^{(\ell-1)}W^{(\ell)} + b^{(\ell)}$$
+
+$$a^{(\ell)} = \phi(z^{(\ell)})$$
+
+For classification, the last layer uses softmax. The implementation subtracts the largest logit before exponentiation, which keeps the probabilities stable when scores get large.
+
+The hidden activation changes the shape of what the network can learn. ReLU keeps positive signals and clips negative ones, which usually trains cleanly. Tanh and logistic activations squash values into a fixed range, which can be useful for small problems but can also slow learning when gradients become tiny.
+
+Initialization matters because every layer depends on the scale of the previous one. If weights start too large, activations can saturate or explode. If they start too small, signals can fade. Xavier initialization is used here because it keeps the early forward and backward signal sizes in a reasonable range for these dense layers.
+
+## The backward pass
+
+Back-propagation is just careful reuse of the chain rule. The output layer gives the first error signal. Each earlier layer receives the part of that error that passed through its weights and activation.
+
+For softmax with cross-entropy, the output gradient is compact:
+
+$$\delta^{(L)} = \frac{1}{n}(p-y_{\text{one-hot}})$$
+
+Then each weight gradient comes from the previous activations and the current layer error:
+
+$$\frac{\partial \mathcal{L}}{\partial W^{(\ell)}} = (a^{(\ell-1)})^\top \delta^{(\ell)} + \alpha W^{(\ell)}$$
+
+The formula is compact, but the bookkeeping is where bugs usually live. Each layer needs the activation from the layer before it, the local derivative of its activation function, and the error signal from the layer after it. A wrong shape can fail loudly. A missing scale factor can train badly and look plausible.
+
+```python
+velocity = momentum * velocity - learning_rate * gradient
+weights += velocity
+```
+
+Momentum is kept as a plain velocity update. It is easier to reason about than a larger optimizer, and it shows how repeated gradients build direction over time.
+
+Mini-batches add another practical trade-off. A full-batch update gives a clean gradient but can be slow and sometimes too smooth. A tiny batch gives noisy updates. A moderate batch gives enough noise to move through rough parts of the loss surface while still pointing in a useful direction most of the time.
+
+## Keeping training honest
+
+L2 regularization penalizes large weights, which nudges the network away from sharp, overly specific fits. Gradient clipping catches unusually large updates before they damage training. Early stopping watches validation loss and keeps the best weights instead of assuming the final epoch is the best epoch.
+
+None of those features are glamorous. They are the ordinary controls that make a small network easier to trust.
+
+## What I checked
+
+I used a central finite-difference gradient check on tiny networks. It is too slow for real training, but it is the right tool for catching a wrong transpose, a missing batch scale, or a broken activation derivative.
+
+After that, I compared controlled classification and regression runs with sklearn and tracked loss curves across fixed seeds.
+
+The gradient check is the most important correctness test. It asks whether a small numerical change in one parameter agrees with the analytic gradient from back-propagation. When those two match, the training loop has a much better chance of being wrong for modeling reasons rather than calculus reasons.
+
+## Where it stops
+
+There is no Adam, dropout, batch normalization, GPU path, sparse input support, or data pipeline. Learning rates still matter. Bad scaling still hurts. A noisy validation split can still choose weak weights.
+
+That is intentional. This version keeps the training mechanics close to the surface.
+
+## Source
+
+Code and reproducibility commands live in [mahirmlk/papers-implementations](https://github.com/mahirmlk/papers-implementations/tree/main/multi-layer_perceptron).

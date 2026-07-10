@@ -1,0 +1,75 @@
+---
+title: "Gradient Boosting Machine"
+subtitle: "Small trees, added one correction at a time"
+date: "2026"
+description: "What gradient boosting actually does — one shallow tree at a time, each fitting the errors the previous trees left behind."
+github: "https://github.com/mahirmlk/papers-implementations/tree/main/gradient_boosting_machine"
+tags: ["gradient-boosting", "classical-machine-learning", "numpy", "cart"]
+---
+
+I wanted this implementation to show the part of boosting that usually gets hidden behind a library call. A model starts with one rough answer. Every tree after that looks at what the model still gets wrong and adds a small correction.
+
+That is the whole shape of the work. No histogram tricks, no distributed training, no production wrapper. Just the learning loop, kept close enough to the code that each step can be checked.
+
+The useful mental model is not "many trees vote." That is closer to random forests. Boosting is more sequential than that. Tree two is trained because tree one left a pattern behind. Tree three is trained because the first two still missed something. The model becomes strong because each weak learner is pointed at a specific remaining mistake.
+
+## The first guess
+
+For regression, the first prediction is the mean target. For binary classification, it is the class log-odds. For multiclass data, it starts from class-prior logits.
+
+That small detail matters. Boosting does not begin from nothing. It begins from the best constant answer it can make, then spends each tree improving that answer.
+
+$$F_M(x) = F_0(x) + \sum_{m=1}^{M} \nu T_m(x)$$
+
+The learning rate, $\nu$, is deliberately small. A tree may know the direction of improvement, but taking the whole step is often too aggressive. Shrinkage slows the fit down and gives later trees room to correct the earlier ones. In practice, this is why many small steps often generalize better than a few large ones.
+
+Tree depth controls a different question: how much interaction should one correction be allowed to express? A stump can only make one split, so it fixes one simple pattern at a time. A deeper tree can model feature interactions, but it can also memorize noise in the residuals.
+
+## The correction step
+
+In the regression case, the next tree is trained on the residual:
+
+$$r_i = y_i - F(x_i)$$
+
+Classification uses the same idea, but the residual comes from the loss gradient. For binary log loss, each leaf gets a Newton-style correction so confident mistakes are handled differently from small probability errors.
+
+This is the part that makes the method more general than squared-error fitting. The target for the next tree is not always a raw difference between label and prediction. It is the direction that most reduces the chosen loss. With squared error, that direction happens to look like an ordinary residual. With log loss, it becomes a probability error.
+
+```python
+raw = np.full(n, self.init_, dtype=np.float64)
+
+for _ in range(self.n_estimators):
+    residual = y - raw
+    tree = DecisionTreeRegressor(max_depth=3).fit(X[idx], residual[idx])
+    raw = raw + self.learning_rate * tree.predict(X)
+```
+
+The tree learner is intentionally small. Split scoring uses sorted feature values and cumulative sums, so the calculation is visible without being slow for the toy and mid-sized runs this project is meant for.
+
+Exact split search is nice for reading code because the best split is really searched, not approximated. The cost is that every node has to examine sorted feature values. That is fine here. It is also the reason production systems usually move to histograms, quantiles, and other approximations once the data grows.
+
+## Why leaves need their own values
+
+A tree structure decides which samples land together. The leaf value decides how much to move those samples. In regression, the mean residual in a leaf is usually enough. In classification, a Newton step gives a better scaled update because it accounts for local curvature of the log loss.
+
+$$\gamma_{m,\ell} = \frac{\sum_{i \in \ell}(y_i-p_i)}{\sum_{i \in \ell}p_i(1-p_i)}$$
+
+That denominator matters. If a group of samples is already predicted with high confidence, the update should not behave the same as a group sitting near uncertainty. The curvature term keeps the correction tied to the shape of the loss.
+
+## What I checked
+
+I compared regression, binary classification, and multiclass classification against sklearn on fixed seeds. The tests also check the class-prior start for imbalanced multiclass data, because that is an easy place to write code that looks fine but learns from the wrong baseline.
+
+The implementation behaves like a teaching version of gradient boosting should: clear training dynamics, stable held-out scores on controlled data, and enough surface area to see where exact split search becomes expensive.
+
+I also cared about the failure modes. If the learning rate is too high, the model can start stepping around the optimum instead of easing into it. If the trees are too deep, later rounds can spend their capacity fitting noise left in the training set. If the number of estimators is too small, the model underfits even when each individual tree is written correctly.
+
+## Where it stops
+
+This version does not handle categorical splits, missing-value routing, monotonic constraints, sample weights, or early stopping. Deep trees can still chase noise. Rare classes are still a good stress test.
+
+The point here is narrower: show how boosting works before the engineering layers take over.
+
+## Source
+
+Code and reproducibility commands live in [mahirmlk/papers-implementations](https://github.com/mahirmlk/papers-implementations/tree/main/gradient_boosting_machine).
