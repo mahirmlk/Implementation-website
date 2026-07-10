@@ -2,15 +2,11 @@ import fs from "fs";
 import path from "path";
 import { compileMDX } from "next-mdx-remote/rsc";
 import { notFound } from "next/navigation";
-import { ArrowUpRight, Calendar, GitBranch, Tag } from "lucide-react";
+import { ArrowUpRight, GitBranch } from "lucide-react";
 import Link from "next/link";
 import { getAllPaperSlugs } from "@/lib/papers";
 import { getMDXComponents } from "@/lib/mdx-components";
 import Equation from "@/components/equation";
-import CostChart from "@/components/cost-chart";
-import RegressionChart from "@/components/regression-chart";
-import GradientDescentChart from "@/components/gradient-descent-chart";
-import PaperToc from "@/components/paper-toc";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 
@@ -72,9 +68,6 @@ export default async function PaperPage({ params }: PaperPageProps) {
     components: {
       ...mdxComponents,
       Equation,
-      CostChart,
-      RegressionChart,
-      GradientDescentChart,
     },
     options: {
       parseFrontmatter: true,
@@ -89,113 +82,78 @@ export default async function PaperPage({ params }: PaperPageProps) {
   if (!fm?.title) notFound();
 
   return (
-    <div className="min-h-dvh bg-[#0a0a0a] text-white">
-      {/* Top Navigation Bar */}
-      <nav className="sticky top-0 z-50 border-b border-white/[0.06] bg-[#0a0a0a]/80 backdrop-blur-xl">
-        <div className="mx-auto flex h-12 max-w-6xl items-center justify-between px-6 lg:px-10">
+    <div className="min-h-dvh bg-white text-black">
+      <nav className="mx-auto flex h-24 max-w-7xl items-center justify-between px-6 text-[15px] text-black sm:px-10 lg:px-16">
+        <Link href="/" className="transition-colors hover:text-black/55">
+          Mahir Malik
+        </Link>
+        <div className="flex items-center gap-8 text-black/80">
           <Link
             href="/"
-            className="flex items-center gap-2 text-[10px] tracking-[0.2em] text-white/40 transition-colors hover:text-white/80 uppercase"
+            className="transition-colors hover:text-black"
           >
-            <span className="mr-1">←</span> Back
+            Home
           </Link>
-          <div className="flex items-center gap-4">
-            <span className="text-[10px] tracking-[0.15em] text-white/25 uppercase">
-              {fm.subtitle}
-            </span>
-            <span className="h-3 w-px bg-white/10" />
-            <span className="text-[10px] tracking-[0.15em] text-white/25 uppercase">
-              {fm.date}
-            </span>
-          </div>
-        </div>
-      </nav>
-
-      {/* Hero Section */}
-      <header className="border-b border-white/[0.06]">
-        <div className="mx-auto max-w-6xl px-6 py-16 lg:px-10 lg:py-24">
-          {/* Tags */}
-          <div className="mb-8 flex flex-wrap gap-2">
-            {(fm.tags || []).map((tag: string) => (
-              <span
-                key={tag}
-                className="inline-flex items-center gap-1.5 rounded border border-white/[0.08] bg-white/[0.03] px-3 py-1 text-[10px] tracking-[0.15em] text-white/35 uppercase"
-              >
-                <Tag className="h-2.5 w-2.5" />
-                {tag}
-              </span>
-            ))}
-          </div>
-
-          {/* Title */}
-          <h1 className="text-4xl font-light tracking-tight text-white sm:text-5xl md:text-6xl lg:text-7xl">
-            {fm.title}
-          </h1>
-
-          {/* Divider */}
-          <div className="mt-8 h-px w-12 bg-white/15" />
-
-          {/* Description */}
-          <p className="mt-8 max-w-2xl text-[14px] leading-[1.8] text-white/45">
-            {fm.description}
-          </p>
-
-          {/* GitHub Link */}
+          <Link
+            href="/implementations"
+            className="transition-colors hover:text-black"
+          >
+            Implementations
+          </Link>
           {fm.github && (
             <a
               href={fm.github}
               target="_blank"
               rel="noopener noreferrer"
-              className="group mt-8 inline-flex items-center gap-3 rounded border border-white/[0.1] bg-white/[0.03] px-5 py-3 text-[11px] tracking-[0.15em] text-white/50 transition-all hover:border-white/[0.2] hover:bg-white/[0.06] hover:text-white/80 uppercase"
+              className="transition-colors hover:text-black"
             >
-              <GitBranch className="h-3.5 w-3.5" />
-              View Repository
-              <ArrowUpRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+              GitHub
             </a>
           )}
         </div>
+      </nav>
+
+      <header className="mx-auto max-w-5xl px-6 pt-14 pb-16 text-center sm:px-10 lg:pt-20 lg:pb-20">
+        <h1 className="font-serif text-4xl font-normal tracking-normal text-black sm:text-5xl md:text-6xl">
+          {fm.title}
+        </h1>
+
+        <p className="mx-auto mt-8 max-w-3xl text-[17px] leading-[1.7] text-black/75">
+          {fm.description}
+        </p>
+
+        <div className="mt-9 flex flex-col items-center gap-4 text-[16px] leading-none text-black/75">
+          <span>Mahir Malik</span>
+          <span>{fm.date}</span>
+        </div>
       </header>
 
-      {/* Content Section */}
-      <div className="mx-auto max-w-6xl px-6 lg:px-10">
-        <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr]">
-          {/* Sidebar — Table of Contents */}
-          <aside className="hidden lg:block">
-            <PaperToc />
-          </aside>
+      <main className="mx-auto max-w-5xl px-6 pb-24 sm:px-10">
+        <article className="paper-content">{content}</article>
 
-          {/* Main Content */}
-          <main className="py-12 lg:py-16 lg:pl-16">
-            <article className="paper-content">{content}</article>
-
-            {/* Footer */}
-            <footer className="mt-24 border-t border-white/[0.06] pt-10">
-              <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <h3 className="text-[13px] font-medium text-white/50">
-                    {fm.title}
-                  </h3>
-                  <p className="mt-1 text-[11px] text-white/25">
-                    {fm.subtitle} · {fm.date}
-                  </p>
-                </div>
-                {fm.github && (
-                  <a
-                    href={fm.github}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group inline-flex items-center gap-2 rounded border border-white/[0.08] px-4 py-2.5 text-[10px] tracking-[0.15em] text-white/30 transition-colors hover:border-white/[0.15] hover:text-white/60 uppercase"
-                  >
-                    <GitBranch className="h-3 w-3" />
-                    Repository
-                    <ArrowUpRight className="h-2.5 w-2.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                  </a>
-                )}
-              </div>
-            </footer>
-          </main>
-        </div>
-      </div>
+        <footer className="mx-auto mt-24 max-w-3xl border-t border-black/[0.1] pt-8">
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h3 className="text-[15px] text-black/70">{fm.title}</h3>
+              <p className="mt-1 text-[14px] text-black/45">
+                {fm.subtitle} - {fm.date}
+              </p>
+            </div>
+            {fm.github && (
+              <a
+                href={fm.github}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group inline-flex items-center gap-2 border border-black/[0.1] px-4 py-2.5 text-[10px] tracking-[0.15em] text-black/45 transition-colors hover:border-black/30 hover:text-black uppercase"
+              >
+                <GitBranch className="h-3 w-3" />
+                Repository
+                <ArrowUpRight className="h-2.5 w-2.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+              </a>
+            )}
+          </div>
+        </footer>
+      </main>
     </div>
   );
 }

@@ -15,7 +15,7 @@ export function getMDXComponents(): MDXComponents {
   return {
     h1: ({ children, ...props }) => (
       <h1
-        className="mt-16 mb-6 text-4xl font-light tracking-tight sm:text-5xl"
+        className="mt-14 mb-5 font-serif text-3xl font-normal tracking-normal sm:text-4xl"
         {...props}
       >
         {children}
@@ -26,7 +26,7 @@ export function getMDXComponents(): MDXComponents {
       return (
         <h2
           id={id}
-          className="mt-14 mb-4 scroll-mt-24 text-2xl font-medium tracking-tight sm:text-3xl"
+          className="mt-14 mb-4 scroll-mt-24 font-serif text-2xl font-normal tracking-normal sm:text-3xl"
           {...props}
         >
           {children}
@@ -35,25 +35,25 @@ export function getMDXComponents(): MDXComponents {
     },
     h3: ({ children, ...props }) => (
       <h3
-        className="mt-10 mb-3 text-xl font-medium tracking-tight"
+        className="mt-9 mb-3 text-lg font-normal tracking-normal"
         {...props}
       >
         {children}
       </h3>
     ),
     p: ({ children, ...props }) => (
-      <p className="mb-5 leading-relaxed text-zinc-400" {...props}>
+      <p className="mb-5 text-[17px] leading-[1.78] text-black/80" {...props}>
         {children}
       </p>
     ),
     ul: ({ children, ...props }) => (
-      <ul className="mb-6 list-disc space-y-2 pl-5 text-zinc-400" {...props}>
+      <ul className="mb-6 list-disc space-y-2 pl-5 text-[16px] leading-[1.75] text-black/75" {...props}>
         {children}
       </ul>
     ),
     ol: ({ children, ...props }) => (
       <ol
-        className="mb-6 list-decimal space-y-2 pl-5 text-zinc-400"
+        className="mb-6 list-decimal space-y-2 pl-5 text-[16px] leading-[1.75] text-black/75"
         {...props}
       >
         {children}
@@ -66,7 +66,7 @@ export function getMDXComponents(): MDXComponents {
     ),
     blockquote: ({ children, ...props }) => (
       <blockquote
-        className="my-6 border-l-2 border-zinc-700 pl-6 italic text-zinc-500"
+        className="my-7 border-l border-black/20 pl-5 text-[16px] leading-[1.75] text-black/65"
         {...props}
       >
         {children}
@@ -77,7 +77,7 @@ export function getMDXComponents(): MDXComponents {
       if (isInline) {
         return (
           <code
-            className="rounded-sm bg-zinc-800 px-1.5 py-0.5 text-sm text-zinc-300"
+            className="rounded-sm bg-black/[0.05] px-1.5 py-0.5 text-sm text-black/70"
             {...props}
           >
             {children}
@@ -85,7 +85,7 @@ export function getMDXComponents(): MDXComponents {
         );
       }
       return (
-        <pre className="mb-6 overflow-x-auto rounded-sm border border-zinc-800 bg-zinc-900 p-4 text-sm">
+        <pre className="mb-6 overflow-x-auto rounded-sm border border-black/[0.1] bg-black/[0.025] p-4 text-sm text-black/75">
           <code className={className} {...props}>
             {children}
           </code>
@@ -94,7 +94,7 @@ export function getMDXComponents(): MDXComponents {
     },
     pre: ({ children, ...props }) => (
       <pre
-        className="mb-6 overflow-x-auto rounded-sm border border-zinc-800 bg-zinc-900 p-4 text-sm"
+        className="mb-6 overflow-x-auto rounded-sm border border-black/[0.1] bg-black/[0.025] p-4 text-sm text-black/75"
         {...props}
       >
         {children}
@@ -103,7 +103,7 @@ export function getMDXComponents(): MDXComponents {
     a: ({ children, href, ...props }) => (
       <a
         href={href}
-        className="text-zinc-300 underline underline-offset-4 transition-colors hover:text-zinc-100"
+        className="text-black/75 underline underline-offset-4 transition-colors hover:text-black"
         target={href?.startsWith("http") ? "_blank" : undefined}
         rel={href?.startsWith("http") ? "noopener noreferrer" : undefined}
         {...props}
@@ -111,39 +111,39 @@ export function getMDXComponents(): MDXComponents {
         {children}
       </a>
     ),
-    hr: (props) => <hr className="my-12 border-zinc-800" {...props} />,
+    hr: (props) => <hr className="my-12 border-black/10" {...props} />,
     table: ({ children, ...props }) => (
-      <div className="my-8 overflow-x-auto rounded-lg border border-zinc-800">
+      <div className="my-8 overflow-x-auto rounded-lg border border-black/10">
         <table className="w-full border-collapse text-sm" {...props}>
           {children}
         </table>
       </div>
     ),
     thead: ({ children, ...props }) => (
-      <thead className="bg-zinc-900/60" {...props}>
+      <thead className="bg-black/[0.03]" {...props}>
         {children}
       </thead>
     ),
     tbody: ({ children, ...props }) => (
-      <tbody className="divide-y divide-zinc-800/60" {...props}>
+      <tbody className="divide-y divide-black/[0.08]" {...props}>
         {children}
       </tbody>
     ),
     tr: ({ children, ...props }) => (
-      <tr className="transition-colors hover:bg-zinc-800/30" {...props}>
+      <tr className="transition-colors hover:bg-black/[0.02]" {...props}>
         {children}
       </tr>
     ),
     th: ({ children, ...props }) => (
       <th
-        className="px-4 py-3 text-left text-[11px] font-medium tracking-[0.12em] uppercase text-zinc-500 border-b border-zinc-800"
+        className="border-b border-black/10 px-4 py-3 text-left text-[11px] font-medium tracking-[0.12em] text-black/45 uppercase"
         {...props}
       >
         {children}
       </th>
     ),
     td: ({ children, ...props }) => (
-      <td className="px-4 py-3 text-zinc-400" {...props}>
+      <td className="px-4 py-3 text-black/60" {...props}>
         {children}
       </td>
     ),

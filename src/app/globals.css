@@ -144,11 +144,11 @@
 
 /* Paper Content Styling */
 .paper-content {
-  @apply max-w-3xl;
+  @apply mx-auto max-w-3xl;
 }
 
 .paper-content h2 {
-  @apply text-[22px] font-medium tracking-tight text-white/90 mt-16 mb-6 pb-3 border-b border-white/[0.06];
+  @apply mt-16 mb-5 border-0 p-0 font-serif text-[28px] font-normal leading-tight tracking-normal text-black;
 }
 
 .paper-content h2:first-child {
@@ -156,28 +156,28 @@
 }
 
 .paper-content h3 {
-  @apply text-[16px] font-medium tracking-tight text-white/80 mt-10 mb-4;
+  @apply mt-10 mb-3 text-[17px] font-normal tracking-normal text-black;
 }
 
 .paper-content h4 {
-  @apply text-[14px] font-medium tracking-tight text-white/70 mt-8 mb-3;
+  @apply mt-8 mb-3 text-[15px] font-normal tracking-normal text-black/70;
 }
 
 .paper-content p {
-  @apply text-[14px] leading-[1.8] text-white/45 mb-5;
+  @apply mb-5 text-[17px] leading-[1.78] text-black/80;
 }
 
 .paper-content a {
-  @apply text-white/60 underline underline-offset-4 decoration-white/20 transition-colors hover:text-white/90 hover:decoration-white/50;
+  @apply text-black underline decoration-black/25 underline-offset-4 transition-colors hover:decoration-black/70;
 }
 
 .paper-content strong {
-  @apply font-medium text-white/70;
+  @apply font-normal text-black;
 }
 
 .paper-content ul,
 .paper-content ol {
-  @apply text-[14px] leading-[1.8] text-white/45 mb-5 pl-5;
+  @apply mb-6 pl-5 text-[16px] leading-[1.75] text-black/75;
 }
 
 .paper-content ul {
@@ -193,48 +193,48 @@
 }
 
 .paper-content li::marker {
-  @apply text-white/25;
+  @apply text-black/30;
 }
 
 .paper-content code {
-  @apply font-mono text-[12px] bg-white/[0.06] text-white/70 px-1.5 py-0.5 rounded;
+  @apply rounded bg-black/[0.05] px-1.5 py-0.5 font-mono text-[12px] text-black/70;
 }
 
 .paper-content pre {
-  @apply bg-white/[0.03] border border-white/[0.06] rounded-lg p-5 mb-6 overflow-x-auto;
+  @apply mb-8 overflow-x-auto rounded-none border border-black/[0.1] bg-black/[0.02] p-5;
 }
 
 .paper-content pre code {
-  @apply bg-transparent text-[13px] leading-[1.7] text-white/60 p-0;
+  @apply bg-transparent p-0 text-[13px] leading-[1.7] text-black/65;
 }
 
 .paper-content hr {
-  @apply border-white/[0.06] my-10;
+  @apply my-10 border-black/[0.1];
 }
 
 .paper-content blockquote {
-  @apply border-l-2 border-white/10 pl-5 py-1 mb-6;
+  @apply my-7 border-l border-black/20 py-1 pl-5;
 }
 
 .paper-content blockquote p {
-  @apply text-white/35 italic;
+  @apply text-[16px] leading-[1.75] text-black/65;
 }
 
 /* Tables */
 .paper-content table {
-  @apply w-full text-[13px] border-collapse mb-8 overflow-hidden rounded-lg border border-white/[0.06];
+  @apply mb-8 w-full overflow-hidden rounded-lg border border-black/[0.1] text-[13px] border-collapse;
 }
 
 .paper-content thead {
-  @apply bg-white/[0.04];
+  @apply bg-black/[0.04];
 }
 
 .paper-content th {
-  @apply text-[11px] font-medium tracking-[0.1em] text-white/50 uppercase text-left px-4 py-3 border-b border-white/[0.06];
+  @apply border-b border-black/[0.1] px-4 py-3 text-left text-[11px] font-medium tracking-[0.1em] text-black/50 uppercase;
 }
 
 .paper-content td {
-  @apply text-[13px] text-white/45 px-4 py-3 border-b border-white/[0.04];
+  @apply border-b border-black/[0.05] px-4 py-3 text-[13px] text-black/60;
 }
 
 .paper-content tr:last-child td {
@@ -242,16 +242,16 @@
 }
 
 .paper-content tr:hover td {
-  @apply bg-white/[0.02];
+  @apply bg-black/[0.02];
 }
 
 /* KaTeX / Math styling */
 .paper-content .katex {
-  @apply text-white/80;
+  @apply text-black/80;
 }
 
 .paper-content .katex-display {
-  @apply my-6 overflow-x-auto overflow-y-hidden py-3 px-4 bg-white/[0.02] rounded border border-white/[0.04];
+  @apply my-6 overflow-x-auto overflow-y-hidden rounded border border-black/[0.08] bg-black/[0.02] px-4 py-3;
 }
 
 .paper-content .katex-display .katex {
@@ -260,5 +260,5 @@
 
 /* Horizontal rule between major sections */
 .paper-content > hr {
-  @apply border-white/[0.06] my-12;
+  @apply my-12 border-black/[0.1];
 }
